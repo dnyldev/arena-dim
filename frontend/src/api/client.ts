@@ -7,7 +7,12 @@ import type {
   ModelInfo,
 } from "../types";
 
-const BASE = "/api";
+// In dev, Vite proxies /api to the backend. In production, set
+// VITE_API_BASE to the public backend origin (e.g.
+// https://beat-engine.onrender.com). No trailing slash.
+const BASE =
+  (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") ??
+  "/api";
 
 async function jsonOrThrow<T>(res: Response): Promise<T> {
   if (!res.ok) {
