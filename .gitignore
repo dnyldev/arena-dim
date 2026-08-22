@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+backend/.venv/
+backend/data/
+**/.venv/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Env
+.env
+.env.local
+
+# Model weights / artifacts
+*.ckpt
+*.npy
+data/
