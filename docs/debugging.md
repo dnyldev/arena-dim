@@ -25,8 +25,8 @@ The engine is built around structured events rather than scattered
 
 * `stage` — one of: `validate`, `probe`, `audio_load`, `normalize`,
   `resample`, `feature_extraction`, `model_load`, `inference`,
-  `postprocess`, `validation`, `tempo`, `rhythm`, `artifact`, `result`,
-  `job`, `system`.
+  `postprocess`, `validation`, `tempo`, `rhythm`, `meter`, `artifact`,
+  `result`, `job`, `system`.
 * `status` — `started`, `progress`, `completed`, `failed`, `skipped`,
   `info`, `warning`.
 

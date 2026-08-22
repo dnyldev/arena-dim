@@ -33,6 +33,7 @@ class EventStage(str, Enum):
     VALIDATION = "validation"
     TEMPO = "tempo"
     RHYTHM = "rhythm"
+    METER = "meter"
     RESULT = "result"
     ARTIFACT = "artifact"
     JOB = "job"

@@ -19,6 +19,7 @@ from typing import Any
 
 import numpy as np
 
+from app.analysis.meter import MeterAnalyzer
 from app.analysis.numbering import infer_beat_numbers
 from app.analysis.rhythm import RhythmAnalyzer
 from app.analysis.tempo import TempoAnalyzer
@@ -60,6 +61,7 @@ class AnalysisOrchestrator:
         self.validator = BeatValidator()
         self.tempo = TempoAnalyzer()
         self.rhythm = RhythmAnalyzer()
+        self.meter = MeterAnalyzer()
 
     @property
     def features(self) -> LogMelSpectrogram:
@@ -156,6 +158,22 @@ class AnalysisOrchestrator:
         timing["rhythm"] = time.perf_counter() - t0
         reporter.completed(EventStage.RHYTHM, "done")
 
+        t0 = time.perf_counter()
+        reporter.started(EventStage.METER, "Estimating time signature")
+        meter = self.meter.analyze(beats_list, downs_list)
+        timing["meter"] = time.perf_counter() - t0
+        reporter.completed(
+            EventStage.METER,
+            (
+                f"~{meter.beats_per_bar}/4 (estimated, "
+                f"confidence {meter.confidence:.2f})"
+                if meter.beats_per_bar is not None
+                else "No meter estimate (insufficient downbeats)"
+            ),
+            beats_per_bar=meter.beats_per_bar,
+            confidence=meter.confidence,
+        )
+
         # ----- beat numbering ------------------------------------------- #
         beat_numbers = infer_beat_numbers(beats_list, downs_list)
 
@@ -182,6 +200,7 @@ class AnalysisOrchestrator:
             beat_numbers=beat_numbers,
             tempo=tempo,
             rhythm=rhythm,
+            meter=meter,
             timing=timing,
             validation=report.to_dict(),
             fps=frame_output.fps,

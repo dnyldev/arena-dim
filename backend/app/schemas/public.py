@@ -29,6 +29,11 @@ class AudioMeta(BaseModel):
     codec: str | None = None
 
 
+class TempoCurvePointOut(BaseModel):
+    time_sec: float
+    bpm: float
+
+
 class TempoOut(BaseModel):
     bpm: float | None = None
     origin: str
@@ -36,6 +41,17 @@ class TempoOut(BaseModel):
     median_ibi_sec: float | None = None
     min_bpm: float | None = None
     max_bpm: float | None = None
+    curve_window_beats: int | None = None
+    curve: list[TempoCurvePointOut] = []
+
+
+class MeterOut(BaseModel):
+    beats_per_bar: int | None = None
+    origin: str = "estimated"
+    method: str = "downbeat_interval_mode"
+    confidence: float | None = None
+    per_bar: list[int] = []
+    is_stable: bool | None = None
 
 
 class RhythmOut(BaseModel):
@@ -67,6 +83,7 @@ class AnalysisResultOut(BaseModel):
     beat_numbers: list[int]
     tempo: TempoOut
     rhythm: RhythmOut
+    meter: MeterOut
     counts: dict[str, int]
     timing_ms: dict[str, float]
     validation: ValidationOut

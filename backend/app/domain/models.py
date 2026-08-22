@@ -132,6 +132,19 @@ class ValueOrigin(str, Enum):
 
 
 @dataclass(frozen=True)
+class TempoCurvePoint:
+    """One sample of the time-varying tempo curve.
+
+    ``time_sec`` is the timestamp the estimate is anchored to (the
+    center of the averaging window); ``bpm`` is the local tempo
+    estimate around that point.
+    """
+
+    time_sec: float
+    bpm: float
+
+
+@dataclass(frozen=True)
 class TempoEstimate:
     bpm: float | None
     origin: ValueOrigin
@@ -140,14 +153,36 @@ class TempoEstimate:
     min_bpm: float | None = None
     max_bpm: float | None = None
     raw_bpms: tuple[float, ...] = field(default_factory=tuple)
+    curve: tuple[TempoCurvePoint, ...] = field(default_factory=tuple)
+    curve_window_beats: int | None = None
+
+
+@dataclass(frozen=True)
+class MeterEstimate:
+    """Estimated time signature, derived from beat-numbering patterns.
+
+    Beat This! does not output a time signature natively; this is
+    reconstructed heuristically from the spacing between consecutive
+    downbeats (via ``beat_numbers``) and is therefore always marked
+    ``ValueOrigin.ESTIMATED``, never fabricated as a hard fact.
+    """
+
+    beats_per_bar: int | None = None
+    origin: ValueOrigin = ValueOrigin.ESTIMATED
+    method: str = "downbeat_interval_mode"
+    confidence: float | None = None
+    per_bar: tuple[int, ...] = field(default_factory=tuple)
+    is_stable: bool | None = None
 
 
 @dataclass(frozen=True)
 class RhythmInfo:
     """Currently-computed rhythmic descriptors.
 
-    Time signature / bar-position / tempo-change detection are future
-    capabilities; they are intentionally not fabricated here.
+    Bar-position / tempo-change detection beyond the tempo curve are
+    future capabilities; they are intentionally not fabricated here.
+    Time-signature estimation lives in :class:`MeterEstimate` /
+    :class:`MeterAnalyzer` (see ``analysis/meter.py``).
     """
 
     beat_density_beats_per_second: float | None = None
@@ -173,6 +208,7 @@ class BeatAnalysisResult:
     beat_numbers: list[int]
     tempo: TempoEstimate
     rhythm: RhythmInfo
+    meter: MeterEstimate
     timing: dict[str, float]
     validation: dict[str, Any]
     artifacts: dict[str, str] = field(default_factory=dict)
@@ -210,6 +246,23 @@ class BeatAnalysisResult:
                 ),
                 "min_bpm": self.tempo.min_bpm,
                 "max_bpm": self.tempo.max_bpm,
+                "curve_window_beats": self.tempo.curve_window_beats,
+                "curve": [
+                    {"time_sec": round(p.time_sec, 6), "bpm": round(p.bpm, 3)}
+                    for p in self.tempo.curve
+                ],
+            },
+            "meter": {
+                "beats_per_bar": self.meter.beats_per_bar,
+                "origin": self.meter.origin.value,
+                "method": self.meter.method,
+                "confidence": (
+                    round(self.meter.confidence, 4)
+                    if self.meter.confidence is not None
+                    else None
+                ),
+                "per_bar": list(self.meter.per_bar),
+                "is_stable": self.meter.is_stable,
             },
             "rhythm": {
                 "beat_density_beats_per_second": (

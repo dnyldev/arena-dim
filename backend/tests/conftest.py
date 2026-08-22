@@ -61,6 +61,25 @@ def sine_wav(tmp_path: Path) -> Path:
     return p
 
 
+@pytest.fixture
+def sine_wav_long(tmp_path: Path) -> Path:
+    """A longer (10 s) sine WAV, giving the mock engine enough beats and
+    downbeats (5 bars of 4/4) for the tempo curve and meter estimator to
+    have something meaningful to compute over.
+    """
+    try:
+        import soundfile as sf
+    except ImportError:
+        pytest.skip("soundfile required for audio tests")
+    sr = 22050
+    duration = 10.0
+    t = np.linspace(0, duration, int(sr * duration), endpoint=False)
+    signal = 0.3 * np.sin(2 * np.pi * 440.0 * t)
+    p = tmp_path / "sine_long.wav"
+    sf.write(str(p), signal.astype(np.float32), sr)
+    return p
+
+
 class MockBeatEngine:
     """Deterministic engine: emits peaks at known times.
 

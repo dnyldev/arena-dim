@@ -76,6 +76,8 @@ class ArtifactGenerator:
                     "beats": len(result.beats),
                     "downbeats": len(result.downbeats),
                 },
+                "tempo_bpm": result.tempo.bpm,
+                "meter_beats_per_bar": result.meter.beats_per_bar,
             }
             mp = out_dir / "meta.json"
             mp.write_text(json.dumps(meta, indent=2), encoding="utf-8")

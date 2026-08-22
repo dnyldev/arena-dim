@@ -125,7 +125,21 @@ Download a produced artifact. `name` is one of `json`, `beats`,
     "method": "median_ibi",
     "median_ibi_sec": 0.521,
     "min_bpm": 110.0,
-    "max_bpm": 120.0
+    "max_bpm": 120.0,
+    "curve_window_beats": 8,
+    "curve": [
+      { "time_sec": 3.2, "bpm": 114.8 },
+      { "time_sec": 3.7, "bpm": 115.1 },
+      { "time_sec": 4.2, "bpm": 118.4 }
+    ]
+  },
+  "meter": {
+    "beats_per_bar": 4,
+    "origin": "estimated",
+    "method": "downbeat_interval_mode",
+    "confidence": 0.97,
+    "per_bar": [4, 4, 4, 4, 3, 4],
+    "is_stable": true
   },
   "rhythm": {
     "beat_density_beats_per_second": 1.92,
@@ -137,7 +151,7 @@ Download a produced artifact. `name` is one of `json`, `beats`,
   "timing_ms": {
     "probe": 5, "audio_prepare": 120, "spectrogram": 800,
     "model_load_and_inference": 7200, "postprocess": 40,
-    "validation": 4, "tempo": 1, "rhythm": 1, "artifacts": 8,
+    "validation": 4, "tempo": 1, "rhythm": 1, "meter": 1, "artifacts": 8,
     "total": 8210
   },
   "validation": { "ok": true, "issues": [] },

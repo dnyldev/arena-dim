@@ -32,6 +32,16 @@ function makeResult(
       median_ibi_sec: 0.5,
       min_bpm: 120,
       max_bpm: 120,
+      curve_window_beats: 8,
+      curve: [],
+    },
+    meter: {
+      beats_per_bar: 4,
+      origin: "estimated",
+      method: "downbeat_interval_mode",
+      confidence: 1,
+      per_bar: [4],
+      is_stable: true,
     },
     rhythm: {
       beat_density_beats_per_second: 2,

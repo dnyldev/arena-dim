@@ -33,7 +33,8 @@ tempo/rhythm analysis, an artifact system, and a job queue.
 ┌─────────────────────────────▼────────────────────────────────────┐
 │ Analysis Orchestrator (pipeline stages + timing + events)        │
 │  validate → probe → load → mono → resample → mel-spect →        │
-│  engine → postprocess → validate → tempo → rhythm → artifacts    │
+│  engine → postprocess → validate → tempo → rhythm → meter →      │
+│  artifacts                                                        │
 └───────┬───────────────┬───────────────┬───────────────┬──────────┘
         │               │               │               │
 ┌───────▼──────┐ ┌──────▼──────┐ ┌──────▼──────┐ ┌──────▼──────┐
@@ -236,7 +237,12 @@ A completed job returns a versioned JSON object
 * `engine` — engine name, version, checkpoint, device, postprocessor
 * `config` — the public configuration used
 * `fps` (50), `beats[]`, `downbeats[]`, `beat_numbers[]`
-* `tempo` — **derived** as `60 / median(IBI)`; origin marked `derived`
+* `tempo` — **derived** as `60 / median(IBI)`; origin marked `derived`;
+  also includes a windowed **tempo curve** (`tempo.curve`, local BPM
+  over time) for tracking tempo drift instead of one flat number
+* `meter` — an **estimated** (not native) time signature, i.e. beats
+  per bar, inferred from the spacing between downbeats, with a
+  `confidence` and `is_stable` flag
 * `rhythm` — beat density, mean/std IBI, irregularity
 * `counts`, `validation` (issues + ok flag), `timing_ms`
 * `artifacts` — paths/keys for downloadable outputs

@@ -7,9 +7,12 @@ the data:
 * mean / std inter-beat interval,
 * irregularity (coefficient of variation of IBIs).
 
-Time-signature, bar-position, and tempo-change detection are
-**future** capabilities and are deliberately not fabricated here.
-The :class:`RhythmAnalyzer` class is the extension point for those.
+Time-signature estimation lives in :class:`app.analysis.meter.MeterAnalyzer`
+and tempo-change tracking lives in the ``tempo.curve`` field produced by
+:class:`app.analysis.tempo.TempoAnalyzer`. Bar-position detection remains a
+**future** capability and is deliberately not fabricated here.  The
+:class:`RhythmAnalyzer` class is the extension point for further
+rhythmic descriptors.
 """
 
 from __future__ import annotations

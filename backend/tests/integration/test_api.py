@@ -52,7 +52,9 @@ def test_models_listing(client):
 
 
 def test_analysis_happy_path(client):
-    wav = _wav_bytes(3.0)
+    # 10s of audio gives the mock engine (beat every 0.5s, downbeat every
+    # 2s) enough bars for a meaningful tempo curve and meter estimate.
+    wav = _wav_bytes(10.0)
     r = client.post(
         "/api/analysis",
         files={"audio": ("song.wav", wav, "audio/wav")},
@@ -72,11 +74,16 @@ def test_analysis_happy_path(client):
     assert jr["state"] == "completed", jr
     assert jr["result"]["counts"]["beats"] > 0
     assert jr["result"]["tempo"]["bpm"] is not None
+    assert len(jr["result"]["tempo"]["curve"]) > 0
+    assert jr["result"]["meter"]["beats_per_bar"] == 4
+    assert jr["result"]["meter"]["origin"] == "estimated"
 
     # Events available.
     ev = client.get(f"/api/jobs/{job_id}/events").json()
     assert any(e["stage"] == "inference" for e in ev)
     assert any(e["stage"] == "postprocess" for e in ev)
+    assert any(e["stage"] == "tempo" for e in ev)
+    assert any(e["stage"] == "meter" for e in ev)
 
     # Artifact downloads.
     artifacts = jr["result"]["artifacts"]

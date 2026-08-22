@@ -14,6 +14,7 @@ const STAGE_ORDER = [
   "validation",
   "tempo",
   "rhythm",
+  "meter",
   "artifact",
   "result",
 ];

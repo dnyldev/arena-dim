@@ -153,9 +153,22 @@ result's `validation.issues`.
 ## 10. Derived analysis
 
 * **Tempo** — `60 / median(IBI)`; `origin = derived`, `method = median_ibi`.
+  A **tempo curve** (`tempo.curve`) is also produced: a sliding window
+  (default 8 beats, `tempo.curve_window_beats`) of median local BPM
+  anchored at each window's center time, so genuine tempo drift is
+  visible instead of collapsed into one scalar. Still `origin =
+  derived` — it's a deterministic transform of native beat times.
+* **Meter (time signature)** — `MeterAnalyzer` (`analysis/meter.py`)
+  estimates beats-per-bar from the gaps between consecutive downbeats
+  (via the same beat-numbering used for `beat_numbers`), reports the
+  modal bar length, a `confidence` (fraction of bars matching the
+  mode), and `is_stable` (confidence ≥ 0.9). This is explicitly
+  `origin = estimated` — a heuristic, not a native model output —
+  because Beat This! never outputs a time signature.
 * **Rhythm** — beat density, mean/std IBI, coefficient of variation.
-  Time-signature / bar-position / tempo-change are **not** fabricated;
-  `RhythmAnalyzer` is the extension point for them.
+  Bar-position detection beyond the tempo curve and meter estimate is
+  **not** fabricated; `RhythmAnalyzer` is the extension point for
+  further descriptors.
 
 ## 11. Extension points
 
@@ -165,5 +178,6 @@ result's `validation.issues`.
 | A new postprocessor        | `postprocess/` (implement the protocol)              |
 | A new artifact format      | `artifacts/generator.py`                             |
 | A new rhythmic descriptor  | `analysis/rhythm.py`                                 |
+| A meter/time-sig refinement| `analysis/meter.py`                                  |
 | A new audio backend        | `audio/backends.py`                                  |
 | A new API field            | schema + result builder (version the schema)         |

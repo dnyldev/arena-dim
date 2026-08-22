@@ -78,6 +78,11 @@ export interface ValidationIssue {
   message: string;
 }
 
+export interface TempoCurvePoint {
+  time_sec: number;
+  bpm: number;
+}
+
 export interface Tempo {
   bpm: number | null;
   origin: string;
@@ -85,6 +90,17 @@ export interface Tempo {
   median_ibi_sec: number | null;
   min_bpm: number | null;
   max_bpm: number | null;
+  curve_window_beats: number | null;
+  curve: TempoCurvePoint[];
+}
+
+export interface Meter {
+  beats_per_bar: number | null;
+  origin: string;
+  method: string;
+  confidence: number | null;
+  per_bar: number[];
+  is_stable: boolean | null;
 }
 
 export interface Rhythm {
@@ -114,6 +130,7 @@ export interface AnalysisResult {
   beat_numbers: number[];
   tempo: Tempo;
   rhythm: Rhythm;
+  meter: Meter;
   counts: { beats: number; downbeats: number };
   timing_ms: Record<string, number>;
   validation: { ok: boolean; issues: ValidationIssue[] };

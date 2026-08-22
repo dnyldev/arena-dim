@@ -3,6 +3,7 @@ import type { AnalysisResult, Job } from "../types";
 import { api } from "../api/client";
 import { Badge, Card, Stat } from "./Card";
 import { BeatTimeline } from "./BeatTimeline";
+import { TempoCurveChart } from "./TempoCurveChart";
 
 function fmtBpm(bpm: number | null): string {
   return bpm == null ? "—" : `${bpm.toFixed(2)} BPM`;
@@ -22,6 +23,17 @@ export function ResultsPanel({ job }: { job: Job }) {
       <Card title="Timeline" subtitle="Beat positions across the audio (D = downbeat)">
         <BeatTimeline result={result} />
       </Card>
+      <Card
+        title="Tempo curve"
+        subtitle="Local BPM over time (sliding window over consecutive beats) — derived, not a native model output"
+      >
+        <TempoCurveChart
+          curve={result.tempo.curve}
+          overallBpm={result.tempo.bpm}
+          windowBeats={result.tempo.curve_window_beats}
+          durationSec={result.audio.duration_sec}
+        />
+      </Card>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <BeatTable result={result} />
@@ -36,14 +48,42 @@ export function ResultsPanel({ job }: { job: Job }) {
   );
 }
 
+function fmtMeter(beatsPerBar: number | null): string {
+  // Only the beat count per bar is estimated (from downbeat spacing);
+  // the note-value denominator (the "/4" in "4/4") is not observable
+  // from beat times alone, so it is intentionally not implied here.
+  return beatsPerBar == null ? "—" : `${beatsPerBar} beats/bar`;
+}
+
 function SummaryCards({ result }: { result: AnalysisResult }) {
+  const meter = result.meter;
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
       <Stat
         label="Estimated tempo"
         value={fmtBpm(result.tempo.bpm)}
         hint={`${result.tempo.origin} · ${result.tempo.method}`}
         tone="good"
+      />
+      <Stat
+        label="Time signature"
+        value={fmtMeter(meter.beats_per_bar)}
+        hint={
+          meter.beats_per_bar == null
+            ? "insufficient downbeats"
+            : `${meter.origin}${
+                meter.confidence != null
+                  ? ` · ${(meter.confidence * 100).toFixed(0)}% of bars`
+                  : ""
+              }${meter.is_stable === false ? " · varies" : ""}`
+        }
+        tone={
+          meter.beats_per_bar == null
+            ? "default"
+            : meter.is_stable
+            ? "good"
+            : "warn"
+        }
       />
       <Stat
         label="Beats"
