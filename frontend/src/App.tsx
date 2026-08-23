@@ -4,6 +4,7 @@ import { FilePicker, PickedFile } from "./components/FilePicker";
 import { ConfigurationPanel } from "./components/ConfigurationPanel";
 import { ProcessingPanel } from "./components/ProcessingPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
+import { HelpButton, HelpDialog } from "./components/HelpDialog";
 import { useConfigurationState } from "./state/useConfigurationState";
 import { useHealthState } from "./state/useHealthState";
 import { useJobState } from "./state/useJobState";
@@ -14,6 +15,7 @@ export function App() {
   const { job, events, phase, error, progress, start, reset, cancel } =
     useJobState();
   const [picked, setPicked] = useState<PickedFile | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const isBusy =
     phase === "uploading" || phase === "queued" || phase === "running";
@@ -38,7 +40,8 @@ export function App() {
 
   return (
     <div className="min-h-screen">
-      <Header health={health} />
+      <Header health={health} onOpenHelp={() => setHelpOpen(true)} />
+      <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
 
       <main className="mx-auto max-w-7xl space-y-6 px-6 py-8">
         {healthError && (
@@ -157,7 +160,13 @@ export function App() {
   );
 }
 
-function Header({ health }: { health: ReturnType<typeof useHealthState>["health"] }) {
+function Header({
+  health,
+  onOpenHelp,
+}: {
+  health: ReturnType<typeof useHealthState>["health"];
+  onOpenHelp: () => void;
+}) {
   return (
     <header className="border-b border-ink-200 bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -170,6 +179,7 @@ function Header({ health }: { health: ReturnType<typeof useHealthState>["health"
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <HelpButton onClick={onOpenHelp} />
           {health && (
             <>
               <Badge tone="good">cpu-only</Badge>
