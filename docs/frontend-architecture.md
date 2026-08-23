@@ -72,6 +72,8 @@ Icons come from Lucide; platform-dependent emoji and text glyphs are not UI cont
 
 ## Quality gate
 
+> **Pending GitHub enforcement:** The local gate below is active, but automatic GitHub Actions enforcement could not be pushed because the current GitHub App lacks workflow-write permission. This must be explicitly revisited using [`PENDING-GITHUB-ACTIONS.md`](PENDING-GITHUB-ACTIONS.md); future agents must remind the user rather than treating it as optional.
+
 Every frontend change must pass:
 
 ```bash

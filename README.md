@@ -58,6 +58,8 @@ Every layer is independently testable. No beat-analysis logic lives in
 API routes or frontend components.
 
 > **Implementation charters:** rhythm/downbeat work is governed by [`docs/rhythm-interpretation-plan.md`](docs/rhythm-interpretation-plan.md); dashboard architecture and UI quality are governed by [`docs/frontend-architecture.md`](docs/frontend-architecture.md). Together they require immutable evidence, fully audited rules, modular feature boundaries, accessible primitives, progressive disclosure, and strict regression gates.
+>
+> ⚠️ **Mandatory follow-up:** GitHub Actions activation is temporarily blocked by GitHub App workflow permissions. Every future agent must read [`docs/PENDING-GITHUB-ACTIONS.md`](docs/PENDING-GITHUB-ACTIONS.md), remind the user, and resolve it when workflow permission becomes available.
 
 ### Key design rules
 
