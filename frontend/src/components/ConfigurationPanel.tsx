@@ -84,6 +84,28 @@ export function ConfigurationPanel({
         )}
       </div>
 
+      <div>
+        <div className="mb-1 flex items-center gap-2">
+          <label className="block text-sm font-medium text-ink-800">
+            Rhythm interpretation
+          </label>
+          <span title="Observe-only explains every proposal without changing output. Conservative apply may reinterpret existing beat roles after strict safety checks." className="cursor-help text-xs text-ink-400">?</span>
+        </div>
+        <select
+          className="w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm text-ink-800"
+          value={config.rhythm_interpretation_mode}
+          disabled={disabled}
+          onChange={(event) => onChange({ rhythm_interpretation_mode: event.target.value as AnalysisRequest["rhythm_interpretation_mode"] })}
+        >
+          <option value="off">Off — raw output only</option>
+          <option value="observe_only">Observe only — explain, never change</option>
+          <option value="conservative_apply">Conservative apply — audited changes</option>
+        </select>
+        <p className="mt-1 text-xs text-ink-500">
+          Raw evidence is always preserved. V1 cannot move, insert, or delete beats.
+        </p>
+      </div>
+
       <div className="divide-y divide-ink-100 rounded-md border border-ink-200 px-3">
         <Toggle
           label="DBN post-processing"

@@ -180,6 +180,7 @@ class BeatAnalysisResult:
     schema_version: str = "1.0"
     counts: dict[str, int] = field(default_factory=dict)
     activations: dict[str, Any] | None = None
+    rhythm_interpretation: dict[str, Any] | None = None
 
     def to_public_dict(self) -> dict[str, Any]:
         """Serialisable representation matching the public JSON schema."""
@@ -211,6 +212,7 @@ class BeatAnalysisResult:
                 "min_bpm": self.tempo.min_bpm,
                 "max_bpm": self.tempo.max_bpm,
             },
+            "rhythm_interpretation": self.rhythm_interpretation,
             "rhythm": {
                 "beat_density_beats_per_second": (
                     round(self.rhythm.beat_density_beats_per_second, 6)

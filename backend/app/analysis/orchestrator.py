@@ -40,6 +40,11 @@ from app.engines.factory import create_engine
 from app.events import EventStage, JobReporter
 from app.features import LogMelSpectrogram
 from app.postprocess import build_postprocessor
+from app.rhythm_interpretation import (
+    InterpretationMode,
+    RhythmInterpretationConfig,
+    RhythmInterpreter,
+)
 
 
 class AnalysisOrchestrator:
@@ -153,8 +158,35 @@ class AnalysisOrchestrator:
         t0 = time.perf_counter()
         reporter.started(EventStage.RHYTHM, "Computing rhythm descriptors")
         rhythm = self.rhythm.analyze(beats_list, probe.duration_sec)
+
+        # Interpret model evidence in a separate, auditable layer. The
+        # default observe-only mode cannot mutate the public beat roles.
+        interpretation = RhythmInterpreter(
+            RhythmInterpretationConfig(
+                mode=InterpretationMode(config.rhythm_interpretation_mode)
+            )
+        ).analyze(
+            beats=beats_list,
+            downbeats=downs_list,
+            duration_sec=probe.duration_sec,
+            fps=frame_output.fps,
+            beat_logits=raw.beat_logits,
+            downbeat_logits=raw.downbeat_logits,
+        )
+        if config.rhythm_interpretation_mode == "conservative_apply":
+            downs_list = [
+                float(event["time_sec"])
+                for event in interpretation["final"]["events"]
+                if event["is_downbeat"]
+            ]
         timing["rhythm"] = time.perf_counter() - t0
-        reporter.completed(EventStage.RHYTHM, "done")
+        reporter.completed(
+            EventStage.RHYTHM,
+            "done",
+            interpretation_mode=config.rhythm_interpretation_mode,
+            tracking=interpretation.get("summary", {}).get("tracking_ratio", {}),
+            decisions=interpretation.get("summary", {}).get("actions", {}),
+        )
 
         # ----- beat numbering ------------------------------------------- #
         beat_numbers = infer_beat_numbers(beats_list, downs_list)
@@ -175,6 +207,7 @@ class AnalysisOrchestrator:
                 "checkpoint": config.checkpoint,
                 "dbn": config.dbn,
                 "float16": config.float16,
+                "rhythm_interpretation_mode": config.rhythm_interpretation_mode,
                 "device": self.runtime.device,
             },
             beats=beats_list,
@@ -185,6 +218,7 @@ class AnalysisOrchestrator:
             timing=timing,
             validation=report.to_dict(),
             fps=frame_output.fps,
+            rhythm_interpretation=interpretation,
             activations=(
                 {
                     "beat_logits": raw.beat_logits,

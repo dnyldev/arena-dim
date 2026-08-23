@@ -18,6 +18,10 @@ class AnalyzeRequest(BaseModel):
     want_beats_file: bool = True
     want_json: bool = True
     want_activations: bool = False
+    rhythm_interpretation_mode: str = Field(
+        default="observe_only",
+        description="off, observe_only, or conservative_apply",
+    )
 
 
 class AudioMeta(BaseModel):
@@ -67,6 +71,7 @@ class AnalysisResultOut(BaseModel):
     beat_numbers: list[int]
     tempo: TempoOut
     rhythm: RhythmOut
+    rhythm_interpretation: dict[str, Any] | None = None
     counts: dict[str, int]
     timing_ms: dict[str, float]
     validation: ValidationOut

@@ -220,6 +220,7 @@ options are sent in the request. See
 | `want_beats_file`  | `true`   | Produce `.beats` TSV                                 |
 | `want_json`        | `true`   | Produce `result.json`                                |
 | `want_activations` | `false`  | Include per-frame logits as `.npy`                   |
+| `rhythm_interpretation_mode` | `observe_only` | `off`, fully audited observation, or conservative role interpretation |
 
 ### Internal / locked parameters
 

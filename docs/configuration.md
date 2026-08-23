@@ -33,6 +33,9 @@ Sent as JSON in the `config` form field of `POST /api/analysis`:
 | `want_beats_file`  | bool    | `true`   | Produce `.beats` TSV artifact                |
 | `want_json`        | bool    | `true`   | Produce `result.json`                        |
 | `want_activations` | bool    | `false`  | Stacked `(2, T)` logits as `.npy`            |
+| `rhythm_interpretation_mode` | string | `observe_only` | `off`, `observe_only`, or `conservative_apply` |
+
+`observe_only` is the safe laboratory default: it records regions, hypotheses, issues, evidence, alternatives, and decisions but cannot change the public beat roles. `conservative_apply` may reinterpret the downbeat role of an existing beat after all safety gates pass; it still cannot move, insert, or delete beats. See [the implementation charter](rhythm-interpretation-plan.md).
 
 Unknown fields are rejected with `UNSUPPORTED_PARAMETER`.
 

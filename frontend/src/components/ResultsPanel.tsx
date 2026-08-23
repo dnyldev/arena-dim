@@ -3,6 +3,7 @@ import type { AnalysisResult, Job } from "../types";
 import { api } from "../api/client";
 import { Badge, Card, Stat } from "./Card";
 import { BeatTimeline } from "./BeatTimeline";
+import { RhythmLaboratory } from "./RhythmLaboratory";
 
 function fmtBpm(bpm: number | null): string {
   return bpm == null ? "—" : `${bpm.toFixed(2)} BPM`;
@@ -19,6 +20,9 @@ export function ResultsPanel({ job }: { job: Job }) {
   return (
     <div className="space-y-4">
       <SummaryCards result={result} />
+      {result.rhythm_interpretation && (
+        <RhythmLaboratory interpretation={result.rhythm_interpretation} />
+      )}
       <Card title="Timeline" subtitle="Beat positions across the audio (D = downbeat)">
         <BeatTimeline result={result} />
       </Card>

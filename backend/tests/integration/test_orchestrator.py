@@ -36,6 +36,15 @@ def test_orchestrator_end_to_end(runtime, sine_wav):
     assert data["schema_version"] == "1.0"
     assert data["config"]["device"] == "cpu"
     assert data["counts"]["beats"] == len(result.beats)
+    interpretation = data["rhythm_interpretation"]
+    assert interpretation["mode"] == "observe_only"
+    assert interpretation["guarantees"] == {
+        "raw_immutable": True,
+        "timestamps_changed": False,
+        "beats_inserted": 0,
+        "beats_deleted": 0,
+    }
+    assert interpretation["correctness_verdict"] == "unknown"
     assert "timing_ms" in data and "total" in data["timing_ms"]
     # Validation OK.
     assert data["validation"]["ok"] is True

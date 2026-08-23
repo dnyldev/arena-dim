@@ -8,6 +8,7 @@ const DEFAULTS: AnalysisRequest = {
   want_beats_file: true,
   want_json: true,
   want_activations: false,
+  rhythm_interpretation_mode: "observe_only",
 };
 
 export function useConfigurationState(initial?: Partial<AnalysisRequest>) {

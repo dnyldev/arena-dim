@@ -255,6 +255,8 @@ class AnalysisConfig:
     want_beats_file: bool = True
     want_json: bool = True
     want_activations: bool = False
+    # Auditable rhythm interpretation. Observe-only never mutates output.
+    rhythm_interpretation_mode: str = "observe_only"
 
     def __post_init__(self) -> None:
         self.validate()
@@ -271,6 +273,12 @@ class AnalysisConfig:
             raise ConfigurationError("'float16' must be a boolean.")
         if not isinstance(self.want_activations, bool):
             raise ConfigurationError("'want_activations' must be a boolean.")
+        if self.rhythm_interpretation_mode not in {
+            "off", "observe_only", "conservative_apply"
+        }:
+            raise ConfigurationError(
+                "'rhythm_interpretation_mode' must be off, observe_only, or conservative_apply."
+            )
 
     def with_overrides(self, **overrides: Any) -> "AnalysisConfig":
         data = asdict(self)

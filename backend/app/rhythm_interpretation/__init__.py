@@ -14,6 +14,7 @@ from .models import (
     TrackingRegion,
     TrackingStatus,
 )
+from .interpreter import RhythmInterpreter
 from .probabilities import sigmoid_logits
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "InterpretationMode",
     "ProposedChange",
     "RhythmInterpretationConfig",
+    "RhythmInterpreter",
     "RuleDecision",
     "RuleIdentity",
     "TrackingRegion",
