@@ -1,5 +1,8 @@
 # Beat Analysis Engine
 
+> **Which branch is the newest?** See [VERSIONS.md](VERSIONS.md) — the
+> human-readable version map (v0…vN) with the 🏆 LATEST pointer.
+
 A production-grade, **CPU-only**, modular beat & downbeat analysis engine
 powered by [Beat This!](https://github.com/CPJKU/beat_this) (Foscarin,
 Schlüter, Widmer — ISMIR 2024).
