@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CORS_ORIGINS=*
+      - DATA_DIR=/data
+      - ALLOW_MODEL_DOWNLOAD=true
+    volumes:
+      - beat_data:/data
+      - torch_cache:/root/.cache/torch
+    ports:
+      - "8000:8000"
+    cpu_shares: 1024
+    mem_limit: 4g
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  beat_data:
+  torch_cache:

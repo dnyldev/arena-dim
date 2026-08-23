@@ -1,0 +1,55 @@
+# Render Blueprint — one-click deploy from GitHub.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Services:
+#   - backend  : CPU-only FastAPI container (existing backend/Dockerfile)
+#   - frontend : static Vite build pointing at the backend
+#
+# After first deploy, copy the backend URL and set it as VITE_API_BASE
+# on the frontend service (Environment), then trigger a frontend redeploy.
+services:
+  - type: web
+    name: beat-analysis-engine
+    runtime: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8000
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: ALLOW_MODEL_DOWNLOAD
+        value: "true"
+      - key: MAX_CONCURRENT_ANALYSES
+        value: "1"
+      # Persist uploaded files + cached checkpoints across deploys.
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: beat-data
+      mountPath: /data
+      sizeGB: 5
+
+  - type: web
+    name: beat-analysis-dashboard
+    runtime: static
+    plan: free
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    autoDeploy: true
+    # SPA fallback — all routes serve index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # Set this to your backend URL after the first backend deploy, e.g.
+      #   https://beat-analysis-engine.onrender.com
+      # Then trigger a manual "Clear build cache & deploy" on the frontend.
+      - key: VITE_API_BASE
+        value: ""
