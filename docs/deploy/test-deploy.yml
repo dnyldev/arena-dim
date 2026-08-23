@@ -1,0 +1,126 @@
+name: Test Deploy (public tunnel)
+
+# Spins up the FULL stack (backend + frontend + model weights) on a
+# GitHub runner and exposes it at a public URL via a free Cloudflare
+# tunnel so you can open it from your phone for testing.
+#
+# HOW TO USE:
+#   1. Push this file to the branch (Actions -> Workflow permissions may
+#      need to be allowed on forks).
+#   2. Go to Actions -> "Test Deploy (public tunnel)" -> Run workflow.
+#   3. Watch the log; the public "trycloudflare.com" URL is printed with
+#      a >>> marker ~30s after the server starts. Open it on your phone.
+#   4. The run stays up for MAX_MINUTES (default 300). Cancel the
+#      workflow when done.
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_minutes:
+        description: "Minutes to keep the server alive"
+        default: "300"
+      checkpoint:
+        description: "Checkpoint to preload (final0 or small0)"
+        default: "small0"
+
+jobs:
+  serve:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ github.event.inputs.max_minutes || 300 }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install CPU PyTorch + beat-this
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -r backend/requirements-dev.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend (same-origin, API base empty)
+        working-directory: frontend
+        run: |
+          npm ci
+          # Served by FastAPI from the same origin -> /api just works.
+          echo "VITE_API_BASE=" > .env.production
+          npm run build
+
+      - name: Preload model checkpoint
+        working-directory: backend
+        env:
+          ALLOW_MODEL_DOWNLOAD: "true"
+        run: |
+          source .venv 2>/dev/null || true
+          # Warm the model cache in the background; do not fail the job if
+          # the cloud is slow — the server can download on first request.
+          python - <<'PY' || true
+          import os, sys
+          sys.path.insert(0, ".")
+          os.environ.setdefault("ALLOW_MODEL_DOWNLOAD", "true")
+          try:
+              from app.core.config import set_runtime, RuntimeConfig
+              from app.engines.beat_this import get_model_manager
+              set_runtime(RuntimeConfig())
+              ckpt = "${{ github.event.inputs.checkpoint || 'small0' }}"
+              print(">>> Preloading checkpoint:", ckpt, flush=True)
+              get_model_manager().get_model(ckpt)
+              print(">>> Checkpoint ready", flush=True)
+          except Exception as e:
+              print(">>> Preload skipped:", e, flush=True)
+          PY
+
+      - name: Start backend (serves API + built frontend)
+        working-directory: backend
+        env:
+          HOST: 127.0.0.1
+          PORT: "8000"
+          FRONTEND_DIST: ../frontend/dist
+          ALLOW_MODEL_DOWNLOAD: "true"
+          MAX_CONCURRENT_ANALYSES: "1"
+        run: |
+          nohup python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/server.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8000/api/health >/dev/null; then
+              echo ">>> backend is up"; break
+            fi
+            sleep 1
+          done
+          curl -s http://127.0.0.1:8000/api/health || (cat /tmp/server.log; exit 1)
+
+      - name: Install cloudflared
+        run: |
+          ARCH=$(dpkg --print-architecture)
+          curl -L --output /tmp/cloudflared.deb \
+            "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}.deb"
+          sudo dpkg -i /tmp/cloudflared.deb || sudo apt-get install -f -y
+          cloudflared --version
+
+      - name: Expose via public tunnel
+        run: |
+          cloudflared tunnel --url http://127.0.0.1:8000 --no-autoupdate > /tmp/tunnel.log 2>&1 &
+          TPID=$!
+          # Wait for and print the public URL.
+          for i in $(seq 1 40); do
+            URL=$(grep -oE 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' /tmp/tunnel.log | head -1)
+            if [ -n "$URL" ]; then
+              echo ">>> PUBLIC URL (open on your phone): $URL"; break
+            fi
+            sleep 1
+          done
+          echo "--- tunnel log ---"; cat /tmp/tunnel.log; echo "------------------"
+          # Keep the job (and tunnel + server) alive for the duration.
+          wait $TPID

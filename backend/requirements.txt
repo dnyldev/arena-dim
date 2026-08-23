@@ -1,0 +1,22 @@
+# CPU-only PyTorch — install BEFORE beat-this so it does not pull CUDA wheels.
+# Install explicitly with:
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+# These pins are the known-good set from Beat This! requirements.txt:
+torch==2.3.1
+torchaudio==2.3.1
+
+# Core
+numpy==1.26.4
+einops==0.8.0
+rotary-embedding-torch==0.6.4
+soxr==0.3.7
+soundfile>=0.12
+tqdm>=4.66
+
+# Web
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+
+# Beat This! itself
+beat-this==1.1.0
