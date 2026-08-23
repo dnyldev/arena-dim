@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react";
-import { Card, Badge } from "./components/Card";
+import { AlertCircle } from "lucide-react";
+import { Button, Card } from "./components/ui";
 import { FilePicker, PickedFile } from "./components/FilePicker";
 import { ConfigurationPanel } from "./components/ConfigurationPanel";
 import { ProcessingPanel } from "./components/ProcessingPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
-import { HelpButton, HelpDialog } from "./components/HelpDialog";
+import { HelpDialog } from "./components/HelpDialog";
+import { AppHeader, SystemFooter } from "./components/layout/AppHeader";
 import { useConfigurationState } from "./state/useConfigurationState";
 import { useHealthState } from "./state/useHealthState";
 import { useJobState } from "./state/useJobState";
@@ -39,11 +41,11 @@ export function App() {
   }, [models, config.checkpoint]);
 
   return (
-    <div className="min-h-screen">
-      <Header health={health} onOpenHelp={() => setHelpOpen(true)} />
+    <div className="min-h-screen bg-ink-50/60">
+      <AppHeader health={health} onOpenHelp={() => setHelpOpen(true)} />
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
 
-      <main className="mx-auto max-w-7xl space-y-6 px-6 py-8">
+      <main className="mx-auto max-w-[1440px] space-y-6 px-4 py-6 sm:px-6 sm:py-8">
         {healthError && (
           <Banner tone="bad">
             Cannot reach backend: {healthError}
@@ -90,28 +92,14 @@ export function App() {
 
             <Card>
               <div className="flex flex-col gap-3">
-                <button
-                  onClick={onAnalyze}
-                  disabled={!canAnalyze}
-                  className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-ink-300"
-                >
-                  {isBusy ? "Processing…" : "Analyze"}
-                </button>
+                <Button onClick={onAnalyze} disabled={!canAnalyze} loading={isBusy} fullWidth>
+                  {isBusy ? "Processing" : "Analyze audio"}
+                </Button>
                 {isBusy && (
-                  <button
-                    onClick={cancel}
-                    className="w-full rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm text-ink-700 hover:bg-ink-50"
-                  >
-                    Cancel
-                  </button>
+                  <Button onClick={cancel} variant="secondary" fullWidth>Cancel</Button>
                 )}
                 {(phase === "completed" || phase === "failed") && (
-                  <button
-                    onClick={onReset}
-                    className="w-full rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm text-ink-700 hover:bg-ink-50"
-                  >
-                    New analysis
-                  </button>
+                  <Button onClick={onReset} variant="secondary" fullWidth>New analysis</Button>
                 )}
                 {!health?.beat_this_installed && (
                   <Banner tone="warn">
@@ -154,47 +142,9 @@ export function App() {
           </div>
         </div>
 
-        <Footer health={health} />
+        <SystemFooter health={health} />
       </main>
     </div>
-  );
-}
-
-function Header({
-  health,
-  onOpenHelp,
-}: {
-  health: ReturnType<typeof useHealthState>["health"];
-  onOpenHelp: () => void;
-}) {
-  return (
-    <header className="border-b border-ink-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-ink-900">
-            Beat Analysis Engine
-          </h1>
-          <p className="text-xs text-ink-500">
-            CPU-only operational dashboard · powered by Beat This!
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <HelpButton onClick={onOpenHelp} />
-          {health && (
-            <>
-              <Badge tone="good">cpu-only</Badge>
-              <Badge tone={health.beat_this_installed ? "good" : "warn"}>
-                beat-this: {health.beat_this_installed ? "installed" : "missing"}
-              </Badge>
-              <Badge tone={health.status === "ok" ? "good" : "bad"}>
-                api: {health.status}
-              </Badge>
-              <span className="text-xs text-ink-400">v{health.version}</span>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
   );
 }
 
@@ -225,24 +175,9 @@ function Banner({
     bad: "bg-rose-50 text-rose-700 border-rose-200",
   };
   return (
-    <div className={`rounded-md border px-3 py-2 text-xs ${tones[tone]}`}>
-      {children}
+    <div className={`flex items-start gap-2 rounded-md border px-3 py-2 text-xs ${tones[tone]}`}>
+      <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+      <div>{children}</div>
     </div>
-  );
-}
-
-function Footer({
-  health,
-}: {
-  health: ReturnType<typeof useHealthState>["health"];
-}) {
-  return (
-    <footer className="mt-10 border-t border-ink-200 pt-4 text-xs text-ink-400">
-      <div className="flex flex-wrap gap-x-6 gap-y-1">
-        <span>audio backends: {health?.audio_backends.join(", ") || "—"}</span>
-        <span>device: {health?.device}</span>
-        <span>uptime: {health?.uptime_sec.toFixed(0)}s</span>
-      </div>
-    </footer>
   );
 }

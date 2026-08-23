@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
+import { Check, Circle, CircleX, LoaderCircle, SkipForward } from "lucide-react";
 import type { AnalysisEvent } from "../types";
-import { Badge, Card } from "./Card";
+import { Badge, Button, Card } from "./ui";
 
 const STAGE_ORDER = [
   "probe",
@@ -41,6 +42,9 @@ export function ProcessingPanel({
   progress: { stage: string; pct: number | null };
   phase: string;
 }) {
+  const [showTechnical, setShowTechnical] = useState(false);
+  const completed = STAGE_ORDER.filter((stage) => stageStatus(stage, events) === "completed").length;
+  const overallPct = phase === "completed" ? 100 : Math.round((completed / STAGE_ORDER.length) * 100);
   return (
     <Card
       title="Pipeline"
@@ -51,7 +55,12 @@ export function ProcessingPanel({
         ) : null
       }
     >
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-100"><div className="h-full rounded-full bg-brand-600 transition-all" style={{ width: `${overallPct}%` }} /></div>
+        <span className="w-10 text-right font-mono text-xs text-ink-500">{overallPct}%</span>
+        <Button variant="ghost" size="sm" onClick={() => setShowTechnical((value) => !value)}>{showTechnical ? "Hide details" : "Technical details"}</Button>
+      </div>
+      {showTechnical && <div className="mt-4 grid grid-cols-1 gap-3 border-t border-ink-100 pt-4 md:grid-cols-2">
         <div>
           <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-500">
             Stages
@@ -59,16 +68,7 @@ export function ProcessingPanel({
           <ol className="space-y-1.5">
             {STAGE_ORDER.map((s) => {
               const st = stageStatus(s, events);
-              const icon =
-                st === "completed"
-                  ? "✓"
-                  : st === "running"
-                  ? "▸"
-                  : st === "failed"
-                  ? "✕"
-                  : st === "skipped"
-                  ? "↷"
-                  : "○";
+              const icon = st === "completed" ? <Check className="h-3.5 w-3.5" /> : st === "running" ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : st === "failed" ? <CircleX className="h-3.5 w-3.5" /> : st === "skipped" ? <SkipForward className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />;
               const color =
                 st === "completed"
                   ? "text-emerald-600"
@@ -129,7 +129,7 @@ export function ProcessingPanel({
             ))}
           </div>
         </div>
-      </div>
+      </div>}
     </Card>
   );
 }

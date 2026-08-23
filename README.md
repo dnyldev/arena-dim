@@ -57,7 +57,7 @@ tempo/rhythm analysis, an artifact system, and a job queue.
 Every layer is independently testable. No beat-analysis logic lives in
 API routes or frontend components.
 
-> **Implementation charter:** all future rhythm/downbeat interpretation work is governed by [`docs/rhythm-interpretation-plan.md`](docs/rhythm-interpretation-plan.md). It requires immutable raw evidence, versioned and fully audited rules, conservative abstention, no hidden timestamp/grid rewrites, progressive-disclosure dashboard UX, and strict regression gates.
+> **Implementation charters:** rhythm/downbeat work is governed by [`docs/rhythm-interpretation-plan.md`](docs/rhythm-interpretation-plan.md); dashboard architecture and UI quality are governed by [`docs/frontend-architecture.md`](docs/frontend-architecture.md). Together they require immutable evidence, fully audited rules, modular feature boundaries, accessible primitives, progressive disclosure, and strict regression gates.
 
 ### Key design rules
 

@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Badge } from "./Card";
+import { FileAudio, UploadCloud } from "lucide-react";
+import { Badge } from "./ui";
 
 export interface PickedFile {
   file: File;
@@ -84,7 +85,9 @@ export function FilePicker({
           if (f) handle(f);
         }}
       />
-      <div className="text-3xl">🎵</div>
+      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${dragging ? "bg-brand-100 text-brand-700" : "bg-ink-100 text-ink-500"}`}>
+        {name ? <FileAudio className="h-6 w-6" /> : <UploadCloud className="h-6 w-6" />}
+      </div>
       <div className="mt-2 text-sm font-medium text-ink-700">
         {name ? name : "Drop an audio file here or click to browse"}
       </div>

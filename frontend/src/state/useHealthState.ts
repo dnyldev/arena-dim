@@ -29,7 +29,9 @@ export function useHealthState() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    // Initial network synchronization; state updates occur after awaited I/O.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refresh();
   }, [refresh]);
 
   return { health, spec, models, error, loading, refresh };

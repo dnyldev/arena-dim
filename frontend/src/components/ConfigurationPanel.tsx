@@ -1,6 +1,6 @@
 import React from "react";
 import type { AnalysisRequest, EngineSpec, ModelInfo } from "../types";
-import { Badge } from "./Card";
+import { Badge, HelpTooltip, Switch } from "./ui";
 
 function Toggle({
   checked,
@@ -26,22 +26,7 @@ function Toggle({
           <div className="mt-1 text-xs text-amber-600">{warning}</div>
         )}
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition ${
-          checked ? "bg-brand-600" : "bg-ink-300"
-        } ${disabled ? "opacity-50" : ""}`}
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-            checked ? "translate-x-4" : "translate-x-0.5"
-          }`}
-        />
-      </button>
+      <Switch checked={checked} disabled={disabled} onCheckedChange={onChange} aria-label={label} />
     </label>
   );
 }
@@ -89,7 +74,7 @@ export function ConfigurationPanel({
           <label className="block text-sm font-medium text-ink-800">
             Rhythm interpretation
           </label>
-          <span title="Observe-only explains every proposal without changing output. Conservative apply may reinterpret existing beat roles after strict safety checks." className="cursor-help text-xs text-ink-400">?</span>
+          <HelpTooltip content="Observe-only explains every proposal without changing output. Conservative apply may reinterpret existing beat roles after strict safety checks." label="Explain rhythm interpretation modes" />
         </div>
         <select
           className="w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm text-ink-800"

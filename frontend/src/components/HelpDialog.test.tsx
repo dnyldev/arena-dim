@@ -16,7 +16,7 @@ describe("analysis guide", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Raw evidence is preserved")).toBeInTheDocument();
     expect(screen.getByText("Regular is not automatically correct")).toBeInTheDocument();
-    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.keyDown(document, { key: "Escape" });
     expect(close).toHaveBeenCalledOnce();
   });
 });
